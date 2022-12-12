@@ -11,4 +11,6 @@ sudo pkill -f websocketproxy
 START=`pwd`
 cd ${START}/fliclib-linux-hci-master/clientlib/websocket/server; 
 
+sudo chmod +x websocketproxy
+
 ./websocketproxy 
