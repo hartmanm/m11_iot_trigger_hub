@@ -11,6 +11,8 @@ sudo pkill -f flicd
 START=`pwd`
 cd ${START}/fliclib-linux-hci-master/bin/x86_64
 
+sudo chmod +x flicd
+
 sudo setcap cap_net_admin=ep ./flicd
 
 [[ -e flic.sqlite3 ]] && rm flic.sqlite3
