@@ -36,7 +36,7 @@ conjunction with other bluetooth devices, it is much more straightforward and po
 
 - website with tie in for multiple m11 connections / aggregator for all devices
 
-- in general I intended for this tool to be more generic and automatic, support more devices, and have a better looking webpage. Never the less, I made signficant progress for 25 hours
+- in general I intended for this tool to be more generic and automatic, support more devices, and have a better looking webpage. Never the less, I made signficant progress for 31 hours
 
 # install dependencies
 
@@ -73,7 +73,10 @@ conjunction with other bluetooth devices, it is much more straightforward and po
 
 6. (Optional) edit m11.json
     ```bash
-    Add additional known_commands or buttons, modify trigger_actions / trigger_values. Note use the frontend to register new devices with flicd. known_commands, trigger_actions and trigger_values can be changed at any time for a registered button.
+    Add additional known_commands or buttons, modify trigger_actions / trigger_values. 
+    Note use the frontend to register new devices with flicd. 
+    known_commands, trigger_actions and trigger_values can be changed 
+    at any time for a registered button.
     ```
 
 # launch_m11
