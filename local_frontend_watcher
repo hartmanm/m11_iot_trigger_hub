@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# local_frontend_watcher
+
+START=$(dirname `readlink -f $0`)
+USE_FIREFOX_OR_CHROME=`bash get_json_key_value ${START}/m11.json USE_FIREFOX_OR_CHROME`
+
+while [[ 1 ]] 
+do
+[[ `ps -ef | grep ${USE_FIREFOX_OR_CHROME} | grep -v grep` == "" ]] && {
+cd $START
+sleep 1
+bash local_frontend_launcher
+sleep 2
+}
+done

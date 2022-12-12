@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<!-- 
+for the University of Illinois
+2022
+Michael Neill Hartman
+
+built ontop of:
+https://github.com/50ButtonsEach/fliclib-linux-hci-master/clientlib/websocket/client/index.html
+-->
+<html>
+<title>m11_iot_trigger_hub</title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.2.3.min.js"></script>
+<script type="text/javascript" src="fliclib.js"></script>
+<script type="text/javascript">
+'use strict'
+
+let buttons = {
+"startcap":"origin",
+"endcap":"terminator"
+}
+
+localStorage.setItem("buttons", JSON.stringify(buttons));
+const local_buttons = JSON.parse(localStorage.getItem("buttons"));
+console.log(local_buttons);
+
+let local_client_port=local_buttons.flic_client_ws_port
+console.log("local_client_port: "+local_client_port)
+
+let local_cmd_listener_port=local_buttons.LOCAL_COMMAND_LISTENER_PORT
+console.log("LOCAL_COMMAND_LISTENER_PORT: "+local_cmd_listener_port)
+
+var local_client='ws://localhost:'+local_client_port
+var local_cmd_listener='http://localhost:'+local_cmd_listener_port
+
+async function post(url = '',data = {}){
+console.log(url);
+console.log(data);
+const response = await fetch(url, {
+method: 'POST',
+mode: 'no-cors',
+cache: 'no-cache',
+credentials: 'same-origin',
+headers: {'Content-Type': 'application/json'},
+referrerPolicy: 'no-referrer',
+body: JSON.stringify(data)
+})
+console.log(response);
+}
+
+function get_button_from_bd_addr(bd_addr){
+var values = []
+for(var k in local_buttons){
+values.push(local_buttons[k]);
+}
+var result = values.find(button => button.bd_addr === bd_addr)
+if(result==undefined){
+console.log("unknown bd_addr: "+bd_addr)
+result={}
+}
+return result
+}
+
+function trigger_button(bd_addr,buttons){
+var button=get_button_from_bd_addr(bd_addr,buttons)
+console.log(button)
+if(button!=undefined){
+if(button.trigger_action == "open_tab"){
+window.open(button.trigger_value)
+}
+if(button.trigger_action == "local_command"){
+var values = []
+for(var k in local_buttons.known_commands){
+values.push(local_buttons.known_commands[k]);
+}
+console.log(values)
+if(values.includes(button.trigger_value)){
+var post_data={"command":button.trigger_value}
+post(local_cmd_listener,post_data)
+}
+else{console.log("unknown local_command: "+button.trigger_value)}
+}
+if(button.trigger_action == "post"){
+//var post_data={"command":button[data]}
+post(button.url,button.data)
+}
+}
+}
+
+//--------------------------------------------------------------------------
+var client = new FlicClient(local_client);
+
+client.onReady = function() {
+	$("#flicServerState").text("Connected");
+	client.getInfo(function(info) {
+		info.bdAddrOfVerifiedButtons.forEach(function(bdAddr) {
+			onGotButton(bdAddr);
+		});
+		if (info.currentlyNoSpaceForNewConnection) {
+			$("#maxConnectionsWarning").show();
+		}
+		$("#bluetoothControllerState").text(info.bluetoothControllerState);
+		$("#batteryPercentage").text(info.batteryPercentage);
+		console.log(info.batteryPercentage)
+	});
+};
+
+client.onClose = function() {
+	$("#flicServerState").text("Closed");
+};
+
+client.onNewVerifiedButton = function(bdAddr) {
+	onGotButton(bdAddr);
+};
+
+client.onNoSpaceForNewConnection = function(maxConcurrentlyConnectedButtons) {
+	$("#maxConnectionsWarning").show();
+};
+
+client.onGotSpaceForNewConnection = function(maxConcurrentlyConnectedButtons) {
+	$("#maxConnectionsWarning").hide();
+};
+
+client.onBluetoothControllerStateChange = function(state) {
+	$("#bluetoothControllerState").text(state);
+};
+
+client.FlicBatteryStatusListener =function(batteryPercentage){
+$("#batteryPercentage").show();
+}
+
+function onGotButton(bdAddr) {
+	var node = $("<tr><td class='bdaddr'></td><td class='status'></td><td class='pressed'></td></tr>");
+	node.find(".bdaddr").text(bdAddr);
+	$("#flics").append(node);
+	
+	var cc = new FlicConnectionChannel(bdAddr, {
+		onButtonUpOrDown: function(clickType, wasQueued, timeDiff) {
+			console.log(bdAddr + ": " + clickType);
+			node.find(".pressed").text(clickType == "ButtonDown" ? "Pressed" : "");
+
+if(clickType == "ButtonDown"){
+trigger_button(bdAddr,buttons)
+}
+},
+onCreateResponse: function(error, connectionStatus) {
+node.find(".status").text(error == "NoError" ? connectionStatus : error);
+},
+onConnectionStatusChanged: function(connectionStatus, disconnectReason) {
+node.find(".status").text(connectionStatus);
+}
+});
+client.addConnectionChannel(cc);
+}
+
+function startScanWizard() {
+	$("#addBtn").hide();
+	$("#cancelAddBtn").show();
+	
+	$("#addBtnResult").text("Welcome to the add new button wizard. Press and hold down your Flic button to add it.");
+	
+	var scanWizard = new FlicScanWizard({
+		onFoundPrivateButton: function() {
+			$("#addBtnResult").text("Your button is private. Hold down for 7 seconds to make it public.");
+		},
+		onFoundPublicButton: function(bdAddr, name) {
+			$("#addBtnResult").text("Found public button " + bdAddr + " (" + name + "). Now connecting...");
+		},
+		onButtonConnected: function(bdAddr, name) {
+			$("#addBtnResult").text("Connected, now verifying and pairing...");
+		},
+		onCompleted: function(result, bdAddr, name) {
+			if (result == "WizardSuccess") {
+				$("#addBtnResult").text("Button " + bdAddr + " successfully added!");
+			} else if (result != "WizardCancelledByUser") {
+				$("#addBtnResult").text("Scan wizard failed: " + result);
+			}
+			$("#addBtn").show();
+			$("#cancelAddBtn").hide();
+		}
+	});
+	client.addScanWizard(scanWizard);
+	window.stopScanWizard = function() {
+		client.cancelScanWizard(scanWizard);
+		$("#addBtnResult").text("");
+	};
+}
+</script>
+<body>
+<!-- -->
+<br/>
+IMPLEMENTED:
+<br/>
+<br/>
+via local cmd listener using 
+<br/>
+trigger shutdown of computer
+<br/>
+"trigger_action":"local_command",   
+<br/>                                
+"trigger_value":"shutdown" 
+<br/>
+<br/>
+trigger restart of m11
+<br/>
+"trigger_action":"local_command",  
+<br/>                                 
+"trigger_value":"reinit" 
+<br/> 
+<br/>
+<br/>
+open browser tabs
+<br/>
+"trigger_action":"open_tab",
+<br/>
+"trigger_value":"https://www.google.com/search?q=cat+biscuits"
+<br/>
+<br/>
+<br/>
+Flic server: <span id="flicServerState">Connecting</span><br/>
+Bluetooth controller: <span id="bluetoothControllerState"></span><br/>
+<table width="500" border="1">
+<thead>
+<tr>
+<th>BdAddr</th>
+<th>Status</th>
+<th>Pressed</th>
+</tr>
+</thead>
+<tbody id="flics">
+</tbody>
+</table>
+<br />
+<input type="button" value="Add new button" onclick="startScanWizard()" id="addBtn" />
+<input type="button" value="Cancel add new button" onclick="stopScanWizard()" id="cancelAddBtn" style="display:none" />
+<br />
+<br />
+<span id="addBtnResult"></span>
+<br />
+<br />
+<span id="maxConnectionsWarning" style="color:red;display:none">Maximum number of connected buttons reached!</span>
+</body>
+</html>

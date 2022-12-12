@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# launch_m11
+
+# install dependencies
+# assumes user is using ubuntu 22.04.1 LTS (Jammy Jellyfish)
+# sudo apt install -y screen
+# sudo apt install -y xterm
+# modify /etc/sudoers with pkexec visudo
+# I recommend using chrome over firefox, to get chrome:
+# wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+IS_REINIT=${1}
+
+START=$(dirname `readlink -f $0`)
+
+2>/dev/null
+
+# generate default configuration json if it doesn't exist from here
+[[ ! -e ${START}/m11.json ]] && {
+cat << EOF > ${START}/m11.json
+{
+"START":"${START}",
+"comment use google-chrome or firefox":"",
+"USE_FIREFOX_OR_CHROME":"google-chrome",
+"LOCAL_COMMAND_LISTENER_PORT":"7993",
+"flic_server_ws_port":"5551",
+"flic_client_ws_port":"5553",
+"button0": {
+"bd_addr":"80:e4:da:79:f5:24",
+"trigger_action":"open_tab",
+"trigger_value":"https://www.google.com/search?q=cat+biscuits"
+},                                              
+"button1": {                                               
+"bd_addr":"80:e4:da:79:b7:89",                              
+"trigger_action":"open_tab",                                 
+"trigger_value":"https://www.google.com/search?q=bitcoin+news" 
+},                                               
+"button2": {                                                
+"bd_addr":"80:e4:da:79:f5:4f",                                 
+"trigger_action":"local_command",                                   
+"trigger_value":"reinit" 
+},
+"button3": {                                                
+"bd_addr":"80:e4:da:79:f5:4w",                                 
+"trigger_action":"open_tab",                                   
+"trigger_value":"https://www.google.com/search?q=how+to+cook+steak"
+},
+"comment leave known_commands as last item for launch_m11 parsing":"",
+"comment local commands possible are in known_commands below":"",
+"known_commands":[
+"reinit",
+"shutdown"
+]
+}
+EOF
+}
+
+[[ $IS_REINIT != "" ]] && {
+USE_FIREFOX_OR_CHROME=`bash get_json_key_value ${START}/m11.json USE_FIREFOX_OR_CHROME`
+LOCAL_COMMAND_LISTENER_PORT=`bash get_json_key_value ${START}/m11.json LOCAL_COMMAND_LISTENER_PORT`
+}
+
+close(){
+local IS_REINIT=${1} 
+sudo pkill -f xterm
+[[ $IS_REINIT != "" ]] && sudo pkill -f screen
+[[ $IS_REINIT != "clean" ]] && {
+[[ $IS_REINIT == "" ]] && {
+sudo pkill -f local_frontend_watcher
+(bash local_frontend_watcher &)
+}
+}
+sudo pkill -f chrome
+sudo pkill -f firefox
+sudo pkill -f local_cmd_listener
+sudo pkill -f flic2_frontend
+}
+
+clean(){
+local START=${1} 
+local IS_REINIT=${2} 
+[[ -e ${START}/local_cmd_listener_data_cmd ]] && sudo rm ${START}/local_cmd_listener_data_cmd
+[[ -e ${START}/local_cmd_listener_wrapper ]] && sudo rm ${START}/local_cmd_listener_wrapper
+[[ -e ${START}/local_cmd_listener_reinit_listener ]] && sudo rm ${START}/local_cmd_listener_reinit_listener
+}
+[[ ${IS_REINIT} == "clean" ]] && {
+close ${IS_REINIT}
+sudo pkill -f screen
+sudo pkill -f local_frontend_watcher
+sudo pkill -f local_frontend_launcher
+clean ${START} ${IS_REINIT}
+exec true
+}
+
+update_local_frontend_json(){
+local START=${1} 
+[[ -e ${START}/m11.json ]] && {
+local JSON_START=`                                                                        \
+ grep -n startcap ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ tr ':' ' '                                                                               | \
+ awk '{print $1}'                                                                         `
+head -$JSON_START ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html > /tmp/`whoami`_m11.json
+local CONFIG_JSON_LENGTH=` \
+ cat -n ${START}/m11.json  | \
+ tail -1                   | \
+ awk '{print $1}'          `                                        
+local INDEX_LENGTH=`                                                            \
+ cat -n ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ tail -1                                                                        | \
+ awk '{print $1}'                                                               `                                        
+# TODO allow any json
+tail -$(($CONFIG_JSON_LENGTH - 2)) ${START}/m11.json | head -$(($CONFIG_JSON_LENGTH -4)) >> /tmp/`whoami`_m11.json
+local JSON_END=`                                                                        \
+ grep -n endcap ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ tr ':' ' '                                                                             | \
+ awk '{print $1}'                                                                       `   
+echo "]," >> /tmp/`whoami`_m11.json
+tail -$(($INDEX_LENGTH - $JSON_END +1)) ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html >> /tmp/`whoami`_m11.json 
+}
+cat /tmp/`whoami`_m11.json > ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html
+}
+
+[[ `sudo grep launch_m11 /etc/sudoers` == "" ]] && {
+echo "you need to add launch_m11 to /etc/sudoers
+add `whoami` ALL=(ALL) NOPASSWD: ${START}/launch_m11 
+add `whoami` ALL=(ALL) NOPASSWD: /usr/bin/screen
+to /etc/sudoers with pkexec visudo
+"
+exec true
+}
+
+# kills any already running processes and starts flic2 server, websocket, frontend, btmon and local_cmd_listener
+close ${IS_REINIT}
+
+(SHELL=/bin/bash sudo xterm -e "cd $START; bash flic2_server" &)
+(SHELL=/bin/bash sudo xterm -e "cd $START; bash flic2_websocket" &)
+(SHELL=/bin/bash sudo xterm -e "cd $START; btmon" &)
+
+clean ${START} ${IS_REINIT}
+
+update_local_frontend_json ${START}
+
+sudo bash local_cmd_listener
+
+# bash launch_m11
+# bash launch_m11 clean

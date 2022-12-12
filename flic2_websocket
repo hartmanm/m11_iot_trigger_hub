@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# flic2_websocket
+
+sudo pkill -f websocketproxy
+
+START=`pwd`
+cd ${START}/fliclib-linux-hci-master/clientlib/websocket/server; 
+
+./websocketproxy 

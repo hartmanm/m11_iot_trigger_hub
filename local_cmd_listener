@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# local_cmd_listener
+
+START=$(dirname `readlink -f $0`)
+LOCAL_COMMAND_LISTENER_PORT=`bash get_json_key_value ${START}/m11.json LOCAL_COMMAND_LISTENER_PORT`
+
+echo "#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# dynamically generated
+# local_cmd_listener_wrapper
+
+cd ${START}
+
+nc -vv -l -p ${LOCAL_COMMAND_LISTENER_PORT} > local_cmd_listener_data_cmd
+" >  ${START}/local_cmd_listener_wrapper
+
+echo "#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# dynamically generated
+# local_cmd_listener_reinit_listener
+
+cd ${START}
+REINIT=0
+echo \"awaiting reinit\"
+sleep 5
+while [[ \$REINIT -ne 1 ]]
+do
+[[ \`tail -1 ${START}/local_cmd_listener_data_cmd | grep command\` != \"\" ]] && {
+#echo \"received command\"
+[[ \`tail -1 ${START}/local_cmd_listener_data_cmd | tr -d '}' | tr '\"' ' ' | tr ':' '\n' | tail -1 | awk '{print \$1}'\` == \"reinit\" ]] && {
+echo \"received command is : reinit\"
+sudo pkill -f chrome
+sudo pkill -f firefox
+sudo pkill -f xterm
+sleep 1
+screen -dmS launch sudo bash ${START}/launch_m11 IS_REINIT
+sleep 1
+REINIT=1
+}
+[[ \`tail -1 ${START}/local_cmd_listener_data_cmd | tr -d '}' | tr '\"' ' ' | tr ':' '\n' | tail -1 | awk '{print \$1}'\` == \"shutdown\" ]] && {
+echo \"received command is : shutdown\"
+echo \"warning shutdown in 5 seconds\"
+> ${START}/local_cmd_listener_data_cmd 
+sleep 5
+sudo shutdown now
+}
+
+}
+done
+" > ${START}/local_cmd_listener_reinit_listener
+
+sudo chown `whoami`:`whoami` local_cmd_listener_wrapper
+sudo chown `whoami`:`whoami` local_cmd_listener_reinit_listener
+
+(SHELL=/bin/bash xterm -e "cd $START; bash local_cmd_listener_wrapper" &)
+sleep 1
+sudo chown `whoami`:`whoami` local_cmd_listener_data_cmd
+sudo bash local_cmd_listener_reinit_listener

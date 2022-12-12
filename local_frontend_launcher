@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# for the University of Illinois
+# 2022
+# Michael Neill Hartman
+
+# local_frontend_launcher
+
+START=$(dirname `readlink -f $0`)
+USE_FIREFOX_OR_CHROME=`bash get_json_key_value ${START}/m11.json USE_FIREFOX_OR_CHROME`
+
+[[ ${USE_FIREFOX_OR_CHROME} == "google-chrome" ]] && {
+${USE_FIREFOX_OR_CHROME} file://${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html --no-sandbox
+}
+[[ ${USE_FIREFOX_OR_CHROME} == "firefox" ]] && {
+${USE_FIREFOX_OR_CHROME} file://${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html
+}
