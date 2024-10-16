@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- 
+Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+mnh_license@proton.me
+https://github.com/hartmanm
+-->
+<html>
+<title>m11_iot_trigger_hub</title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.2.3.min.js"></script>
+<script type="text/javascript" src="fliclib.js"></script>
+<script type="text/javascript">
+'use strict'
+
+let buttons = {
+"startcap":"origin",
+"endcap":"terminator"
+}
+
+localStorage.setItem("buttons", JSON.stringify(buttons));
+const local_buttons = JSON.parse(localStorage.getItem("buttons"));
+console.log(local_buttons);
+
+let local_client_port=local_buttons.flic_client_ws_port
+console.log("local_client_port: "+local_client_port)
+
+let local_cmd_listener_port=local_buttons.LOCAL_COMMAND_LISTENER_PORT
+console.log("LOCAL_COMMAND_LISTENER_PORT: "+local_cmd_listener_port)
+
+var local_client='ws://localhost:'+local_client_port
+var local_cmd_listener='http://localhost:'+local_cmd_listener_port
+
+async function post(url = '',data = {}){
+console.log(url);
+console.log(data);
+const response = await fetch(url, {
+method: 'POST',
+mode: 'no-cors',
+cache: 'no-cache',
+credentials: 'same-origin',
+headers: {'Content-Type': 'application/json'},
+referrerPolicy: 'no-referrer',
+body: JSON.stringify(data)
+})
+console.log(response);
+}
+
+function get_button_from_bd_addr(bd_addr){
+var values = []
+for(var k in local_buttons){
+values.push(local_buttons[k]);
+}
+var result = values.find(button => button.bd_addr === bd_addr)
+if(result==undefined){
+console.log("unknown bd_addr: "+bd_addr)
+result={}
+}
+return result
+}
+
+function trigger_button(bd_addr,buttons){
+var button=get_button_from_bd_addr(bd_addr,buttons)
+console.log(button)
+if(button!=undefined){
+if(button.trigger_action == "open_tab"){
+window.open(button.trigger_value)
+}
+if(button.trigger_action == "local_command"){
+var values = []
+for(var k in local_buttons.known_commands){
+values.push(local_buttons.known_commands[k]);
+}
+console.log(values)
+if(values.includes(button.trigger_value)){
+var post_data={"command":button.trigger_value}
+post(local_cmd_listener,post_data)
+}
+else{console.log("unknown local_command: "+button.trigger_value)}
+}
+if(button.trigger_action == "post"){
+//var post_data={"command":button[data]}
+post(button.url,button.data)
+}
+}
+}
