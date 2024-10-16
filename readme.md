@@ -40,7 +40,7 @@ conjunction with other bluetooth devices, it is much more straightforward and po
 
 - website with tie in for multiple m11 connections / aggregator for all devices
 
-- in general I intended for this tool to be more generic and automatic, support more devices, and have a better looking webpage. Never the less, I made signficant progress for 31 hours
+- in general I intended for this tool to be more generic and automatic, support more devices, and have a better looking webpage. Never the less, I made signficant progress for 32 hours
 
 # install dependencies
 
