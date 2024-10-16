@@ -2,8 +2,10 @@
 # m11 iot trigger hub
 
 This repo contains all the project code:  
-
+<!---
 [https://github.com/mnhuoi/m11_iot_trigger_hub](https://github.com/mnhuoi/m11_iot_trigger_hub)
+-->
+[https://github.com/hartmanm/m11_iot_trigger_hub](https://github.com/hartmanm/m11_iot_trigger_hub)
 
 ```bash
 Note only ubuntu 22.04.1 LTS (Jammy Jellyfish) was tested
