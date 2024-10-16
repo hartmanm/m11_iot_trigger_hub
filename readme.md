@@ -15,11 +15,13 @@ Before you can launch you need to install dependencies
 
 # what it does
 
-- The m11_iot_trigger_hub wraps the flic2 linux sdk allowing flic2 bluetooth buttons to trigger linux commands that are configurable from the m11.json
+- Use bluetooth buttons to trigger linux commands that are configurable from a json. Update a static website with dynamic content
+
+- Uses a single configuration file for all configurations
 
 - Allows flic2 iot buttons to trigger anything on the local host linux device or anything reachable via an http post method
 
-- Uses a single configuration file for all configurations
+- The m11_iot_trigger_hub wraps the flic2 linux sdk allowing flic2 bluetooth buttons to trigger linux commands that are configurable from the m11.json
 
 # why the flic2 button?
 
