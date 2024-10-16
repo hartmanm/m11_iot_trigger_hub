@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # launch_m11
 
@@ -11,6 +11,7 @@
 # sudo apt install -y screen
 # sudo apt install -y xterm
 # modify /etc/sudoers with pkexec visudo
+# git clone https://github.com/50ButtonsEach/fliclib-linux-hci.git
 # I recommend using chrome over firefox, to get chrome:
 # wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 # sudo dpkg -i google-chrome-stable_current_amd64.deb
@@ -18,6 +19,14 @@
 IS_REINIT=${1}
 
 START=$(dirname `readlink -f $0`)
+
+[[ ! -d ${START}/fliclib-linux-hci ]] && {
+git clone https://github.com/50ButtonsEach/fliclib-linux-hci.git
+}
+[[ ! -d ${START}/fliclib-linux-hci ]] && {
+echo "connect to the internet to clone the flic sdk"
+exec true
+}
 
 2>/dev/null
 
@@ -102,28 +111,28 @@ update_local_frontend_json(){
 local START=${1} 
 [[ -e ${START}/m11.json ]] && {
 local JSON_START=`                                                                        \
- grep -n startcap ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ grep -n startcap ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html | \
  tr ':' ' '                                                                               | \
  awk '{print $1}'                                                                         `
-head -$JSON_START ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html > /tmp/`whoami`_m11.json
+head -$JSON_START ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html > /tmp/`whoami`_m11.json
 local CONFIG_JSON_LENGTH=` \
  cat -n ${START}/m11.json  | \
  tail -1                   | \
  awk '{print $1}'          `                                        
 local INDEX_LENGTH=`                                                            \
- cat -n ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ cat -n ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html | \
  tail -1                                                                        | \
  awk '{print $1}'                                                               `                                        
 # TODO allow any json
 tail -$(($CONFIG_JSON_LENGTH - 2)) ${START}/m11.json | head -$(($CONFIG_JSON_LENGTH -4)) >> /tmp/`whoami`_m11.json
 local JSON_END=`                                                                        \
- grep -n endcap ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html | \
+ grep -n endcap ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html | \
  tr ':' ' '                                                                             | \
  awk '{print $1}'                                                                       `   
 echo "]," >> /tmp/`whoami`_m11.json
-tail -$(($INDEX_LENGTH - $JSON_END +1)) ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html >> /tmp/`whoami`_m11.json 
+tail -$(($INDEX_LENGTH - $JSON_END +1)) ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html >> /tmp/`whoami`_m11.json 
 }
-cat /tmp/`whoami`_m11.json > ${START}/fliclib-linux-hci-master/clientlib/websocket/client/index.html
+cat /tmp/`whoami`_m11.json > ${START}/fliclib-linux-hci/clientlib/websocket/client/index.html
 }
 
 [[ `sudo grep launch_m11 /etc/sudoers` == "" ]] && {

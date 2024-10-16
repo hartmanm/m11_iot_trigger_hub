@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # flic2_delete_devices
 
 START=$(dirname `readlink -f $0`)
-cd ${START}/fliclib-linux-hci-master/bin/x86_64
+cd ${START}/fliclib-linux-hci/bin/x86_64
 
 [[ -e flic.sqlite3 ]] && rm flic.sqlite3
 

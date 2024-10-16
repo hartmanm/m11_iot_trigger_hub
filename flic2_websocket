@@ -1,15 +1,19 @@
 #!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # flic2_websocket
 
 sudo pkill -f websocketproxy
 
 START=`pwd`
-cd ${START}/fliclib-linux-hci-master/clientlib/websocket/server; 
+cp ${START}/modified_fliclib_linux_hci_sdk_overlays/websocketproxy.cpp ${START}/fliclib-linux-hci/clientlib/websocket/server
+cd ${START}/fliclib-linux-hci/clientlib/websocket/server
+[[ ! -e ${START}/fliclib-linux-hci/clientlib/websocket/server/websocketproxy ]] && {
+make
+}
 
 sudo chmod +x websocketproxy
 

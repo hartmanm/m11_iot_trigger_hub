@@ -40,9 +40,11 @@ conjunction with other bluetooth devices, it is much more straightforward and po
 
 # install dependencies
 
-1. clone the repo 
+1. clone the repos
     ```bash
      git clone https://github.com/mnhuoi/m11_iot_trigger_hub.git
+     cd m11_iot_trigger_hub
+     git clone https://github.com/50ButtonsEach/fliclib-linux-hci.git
     ```
 2. install screen
     ```bash

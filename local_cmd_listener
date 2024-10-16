@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # local_cmd_listener
 
@@ -11,9 +11,9 @@ LOCAL_COMMAND_LISTENER_PORT=`bash get_json_key_value ${START}/m11.json LOCAL_COM
 
 echo "#!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # dynamically generated
 # local_cmd_listener_wrapper
@@ -25,9 +25,9 @@ nc -vv -l -p ${LOCAL_COMMAND_LISTENER_PORT} > local_cmd_listener_data_cmd
 
 echo "#!/bin/bash
 
-# for the University of Illinois
-# 2022
-# Michael Neill Hartman
+# Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
+# mnh_license@proton.me
+# https://github.com/hartmanm
 
 # dynamically generated
 # local_cmd_listener_reinit_listener
