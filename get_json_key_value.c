@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 // Copyright (c) 2022 Michael Neill Hartman. All rights reserved.
 // mnh_license@proton.me
 // https://github.com/hartmanm
@@ -9,6 +5,10 @@
 // get_json_key_value.c
 
 // gcc -o get_json_key_value get_json_key_value.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void trim_quotes(char* str){
 size_t len=strlen(str);
@@ -20,12 +20,12 @@ str[len-2]='\0';
 
 int main(int number_of_parameters,char* parameters[]){
 if(number_of_parameters!=3){
-fprintf(stderr,"Usage: %s <json_file_path> <key>\n",parameters[0]);
+fprintf(stderr,"Usage: %s <json_path> <key>\n",parameters[0]);
 return EXIT_FAILURE;
 }
-const char* json_file_path=parameters[1];
+const char* json_path=parameters[1];
 const char* target_key=parameters[2];
-FILE* file=fopen(json_file_path,"r");
+FILE* file=fopen(json_path,"r");
 if(!file){
 perror("Could not open file");
 return EXIT_FAILURE;
@@ -54,7 +54,7 @@ if(target_line_number==-1){
 printf("Key not found\n");
 return EXIT_SUCCESS;
 }
-file=fopen(json_file_path,"r");
+file=fopen(json_path,"r");
 if(!file){
 perror("Could not open file");
 return EXIT_FAILURE;
